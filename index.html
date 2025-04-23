@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editable Calendar</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #f8f9fa, #e9ecef);
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #3f51b5;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    header h1 {
+      margin: 0;
+    }
+    .calendar-controls {
+      text-align: center;
+      margin: 20px auto;
+    }
+    .calendar-controls button {
+      background-color: #3f51b5;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 0 10px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .day {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 10px;
+      min-height: 140px;
+      position: relative;
+      transition: transform 0.2s ease;
+    }
+    .day.today {
+      border: 2px solid #ff9800;
+    }
+    .day:hover {
+      transform: scale(1.02);
+    }
+    .day textarea {
+      width: 100%;
+      height: 80px;
+      resize: none;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 6px;
+      margin-top: 6px;
+      font-size: 14px;
+      background-color: #f9f9f9;
+    }
+    .day-number {
+      font-weight: bold;
+      color: #333;
+      font-size: 14px;
+    }
+    .save-btn {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Editable Calendar</h1>
+    <p>Click on a day to add notes. Notes are saved locally in your browser.</p>
+  </header>
+
+  <div class="calendar-controls">
+    <button onclick="clearAllNotes()">🧹 Clear All Notes</button>
+    <button onclick="window.print()">🖨️ Print Calendar</button>
+  </div>
+
+  <div class="calendar" id="calendar"></div>
+
+  <script>
+    const calendar = document.getElementById('calendar');
+    const currentYear = new Date().getFullYear();
+    const today = new Date().toDateString();
+
+    function generateCalendar(year) {
+      const daysInYear = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 366 : 365;
+      for (let day = 1; day <= daysInYear; day++) {
+        const date = new Date(year, 0);
+        date.setDate(day);
+
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'day';
+        if (date.toDateString() === today) {
+          dayDiv.classList.add('today');
+        }
+
+        const dayNumber = document.createElement('div');
+        dayNumber.className = 'day-number';
+        dayNumber.textContent = date.toDateString();
+
+        const note = document.createElement('textarea');
+        const savedNote = localStorage.getItem(`note-${year}-${day}`);
+        if (savedNote) note.value = savedNote;
+
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Save';
+        saveBtn.className = 'save-btn';
+        saveBtn.addEventListener('click', () => {
+          localStorage.setItem(`note-${year}-${day}`, note.value);
+        });
+
+        dayDiv.appendChild(dayNumber);
+        dayDiv.appendChild(note);
+        dayDiv.appendChild(saveBtn);
+        calendar.appendChild(dayDiv);
+      }
+    }
+
+    function clearAllNotes() {
+      if (confirm('Are you sure you want to delete all saved notes?')) {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key.startsWith('note-')) {
+            localStorage.removeItem(key);
+          }
+        }
+        window.location.reload();
+      }
+    }
+
+    generateCalendar(currentYear);
+  </script>
+</body>
+</html>
